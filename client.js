@@ -8,6 +8,8 @@ var me = {
     connected: false
 };
 
+var variable_bidule = null;
+
 var client = new net.Socket();
 var ip = argv.ip;
 var port = argv.port;
