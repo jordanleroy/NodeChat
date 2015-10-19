@@ -8,8 +8,6 @@ var me = {
     connected: false
 };
 
-var variable_bidule = null;
-
 var client = new net.Socket();
 var ip = argv.ip;
 var port = argv.port;
@@ -80,6 +78,15 @@ client.connect(port, ip, function() {
                         message: messageToWrite
                     }));
                 }
+            }else if(input.startsWith('#')){
+                var personne = input.substr(1,input.indexOf(' ')-1);
+                var message = input.substr((input.indexOf(' ') + 1), input.length);
+                client.write(JSON.stringify({
+                    type: 'message',
+                    to: 'onePerson',
+                    person: personne,
+                    message: message
+                }));
             } else {
                 client.write(
                     JSON.stringify({
@@ -112,10 +119,14 @@ client.on('data', function(data) {
             console.log('You are now disconnected');
             client.end();
             me.connected = false;
+            process.exit();
         }
 
         if (donnees.type == 'QuitGroupConfirmation') {
-            console.log("You are now out of the group", donnees.groupToQuit);
+            if(donnees.groupToQuit == 'none')
+                console.log('You do not belong to this group');
+            else
+                console.log("You are now out of the group", donnees.groupToQuit);
         }
         if (donnees.type == 'groupConfirmation') {
             if (donnees.message == 'ok')
