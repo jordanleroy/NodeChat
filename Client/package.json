@@ -10,7 +10,7 @@
         "net": ">= 1.0.2",
         "event-stream": ">= 3.3.1",
         "minimist": ">= 1.2.0"
-    }
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/jordanleroy/NodeChat.git"
