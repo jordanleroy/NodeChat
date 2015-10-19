@@ -1,0 +1,28 @@
+{
+    "name": "nodechat",
+    "version": "1.0.0",
+    "description": "A nice chat using node.js",
+    "main": "client.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "net": ">= 1.0.2",
+        "event-stream": ">= 3.3.1",
+        "minimist": ">= 1.2.0"
+    }
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/jordanleroy/NodeChat.git"
+    },
+    "keywords": [
+        "chat",
+        "nodeChat"
+    ],
+    "author": "Jordan Leroy & Fouad Chamoun",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/jordanleroy/NodeChat/issues"
+    },
+    "homepage": "https://github.com/jordanleroy/NodeChat#readme"
+}
