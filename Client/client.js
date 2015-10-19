@@ -1,6 +1,5 @@
 //node client.js --name David --ip 127.0.0.1 --port 8080
 var net = require('net');
-var spawn = require('child_process').spawn;
 var es = require('event-stream'); //import de la lib event-stream
 var argv = require('minimist')(process.argv.slice(2));
 
