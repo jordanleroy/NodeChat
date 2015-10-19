@@ -41,15 +41,32 @@ client.connect(port, ip, function() {
                         }));
                     }
                 }
+                if(input == '--help'){
+                    console.log('Here is the documentation of the NodeChat\r');
+                    console.log('To write to all members connected to NodeChat, type your message and press enter\r\n');
+                        console.log('To write to a specific person : #\'personName\'\r');
+                        console.log('To show a list of all existing groups : --showGroups\r\n');
+                        console.log('To join a group : --join \'groupname\'\r');
+                        console.log('To write to a specific group : @\'groupname\' your Message\r');
+                        console.log('To list all members of a group : --list \'groupName\'');
+                        console.log('To quit a group : --quit \'groupname\'\r\n');
+                        console.log('To quit NodeChat press \'Ctrl+C\' or type --quit and press enter\r');
+
+                }
                 if (input.startsWith('--showGroups')) {
                     client.write(JSON.stringify({
                         type: 'listOfGroups'
                     }));
                 }
                 if (input.startsWith('--list')) {
+                    if(input.indexOf(' ')>-1)
+                        gLis = input.substr(input.indexOf(' ') + 1, input.length);
+                    else {
+                        gLis='general';
+                    }
                     client.write(JSON.stringify({
                         type: 'listMembers',
-                        groupToList: input.substr(input.indexOf(' ') + 1, input.length)
+                        groupToList:gLis
                     }));
                 }
 
@@ -107,7 +124,7 @@ client.on('data', function(data) {
             me.id = donnees.id;
             me.connected = donnees.connectionConfirmed;
             if (me.connected)
-                console.log('You are now connected');
+                console.log('You are now connected    --    For help, type \'--help\'');
             else {
                 if (donnees.cause == 'noName')
                     console.log('You have to reconnect and fill the name field');
@@ -130,7 +147,7 @@ client.on('data', function(data) {
         }
         if (donnees.type == 'groupConfirmation') {
             if (donnees.message == 'ok')
-                console.log('(From server) : You have now joined the group :', donnees.joinedGroup);
+                console.log('(From server)  You have now joined the group :', donnees.joinedGroup);
         }
 
         if (donnees.type == 'error') {

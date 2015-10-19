@@ -24,6 +24,17 @@ var server = net.createServer(function(socket) {
                     socket.id = connectionCounter;
                     socket.name = donnees.name;
                     socket.group = 'general';
+					if (clients_array.length>0){
+							j=0;
+							while(j<clients_array.length){
+								clients_array[j].write(JSON.stringify({
+									type: 'message',
+									to: 'all',
+									message:''+ socket.name + ' is now connected'
+								}));
+								j++;
+							}
+					}
                     clients_array.push(socket);
                     connectionCounter++;
                 } else {
@@ -42,6 +53,15 @@ var server = net.createServer(function(socket) {
                     message: 'ok',
                     joinedGroup: donnees.groupToJoin
                 }));
+				j=0;
+				while(j<clients_array.length){
+					if(clients_array[j].group.indexOf(donnees.groupToJoin) > -1 && clients_array[j].id !== socket.id)
+					clients_array[j].write(JSON.stringify({
+						type: 'message',
+						message:''+ socket.name + ' has now joined @' + donnees.groupToJoin
+					}));
+					j++;
+				}
             }
 
             if (donnees.type == 'connectionEnd') {
