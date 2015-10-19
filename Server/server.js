@@ -175,8 +175,6 @@ var server = net.createServer(function(socket) {
                 }
             }
         }
-
-        //console.log(data);
     });
     socket.on('error', console.error);
 });
