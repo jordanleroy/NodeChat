@@ -1,5 +1,6 @@
 //node client.js --name David
 var net = require('net');
+var spawn = require('child_process').spawn;
 var es = require('event-stream'); //import de la lib event-stream
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -41,17 +42,16 @@ client.connect(port, ip, function() {
                         }));
                     }
                 }
-                if(input == '--help'){
+                if (input == '--help') {
                     console.log('Here is the documentation of the NodeChat\r');
                     console.log('To write to all members connected to NodeChat, type your message and press enter\r\n');
-                        console.log('To write to a specific person : #\'personName\'\r');
-                        console.log('To show a list of all existing groups : --showGroups\r\n');
-                        console.log('To join a group : --join \'groupname\'\r');
-                        console.log('To write to a specific group : @\'groupname\' your Message\r');
-                        console.log('To list all members of a group : --list \'groupName\'');
-                        console.log('To quit a group : --quit \'groupname\'\r\n');
-                        console.log('To quit NodeChat press \'Ctrl+C\' or type --quit and press enter\r');
-
+                    console.log('To write to a specific person : #\'personName\'\r');
+                    console.log('To show a list of all existing groups : --showGroups\r\n');
+                    console.log('To join a group : --join \'groupname\'\r');
+                    console.log('To write to a specific group : @\'groupname\' your Message\r');
+                    console.log('To list all members of a group : --list \'groupName\'');
+                    console.log('To quit a group : --quit \'groupname\'\r\n');
+                    console.log('To quit NodeChat press \'Ctrl+C\' or type --quit and press enter\r');
                 }
                 if (input.startsWith('--showGroups')) {
                     client.write(JSON.stringify({
@@ -59,14 +59,14 @@ client.connect(port, ip, function() {
                     }));
                 }
                 if (input.startsWith('--list')) {
-                    if(input.indexOf(' ')>-1)
+                    if (input.indexOf(' ') > -1)
                         gLis = input.substr(input.indexOf(' ') + 1, input.length);
                     else {
-                        gLis='general';
+                        gLis = 'general';
                     }
                     client.write(JSON.stringify({
                         type: 'listMembers',
-                        groupToList:gLis
+                        groupToList: gLis
                     }));
                 }
 
@@ -95,8 +95,8 @@ client.connect(port, ip, function() {
                         message: messageToWrite
                     }));
                 }
-            }else if(input.startsWith('#')){
-                var personne = input.substr(1,input.indexOf(' ')-1);
+            } else if (input.startsWith('#')) {
+                var personne = input.substr(1, input.indexOf(' ') - 1);
                 var message = input.substr((input.indexOf(' ') + 1), input.length);
                 client.write(JSON.stringify({
                     type: 'message',
@@ -140,7 +140,7 @@ client.on('data', function(data) {
         }
 
         if (donnees.type == 'QuitGroupConfirmation') {
-            if(donnees.groupToQuit == 'none')
+            if (donnees.groupToQuit == 'none')
                 console.log('You do not belong to this group');
             else
                 console.log("You are now out of the group", donnees.groupToQuit);
