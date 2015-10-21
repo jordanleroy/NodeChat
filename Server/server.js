@@ -24,17 +24,17 @@ var server = net.createServer(function(socket) {
                     socket.id = connectionCounter;
                     socket.name = donnees.name;
                     socket.group = 'general';
-					if (clients_array.length>0){
-							j=0;
-							while(j<clients_array.length){
-								clients_array[j].write(JSON.stringify({
-									type: 'message',
-									to: 'all',
-									message:''+ socket.name + ' is now connected'
-								}));
-								j++;
-							}
-					}
+                    if (clients_array.length > 0) {
+                        j = 0;
+                        while (j < clients_array.length) {
+                            clients_array[j].write(JSON.stringify({
+                                type: 'message',
+                                to: 'all',
+                                message: '' + socket.name + ' is now connected'
+                            }));
+                            j++;
+                        }
+                    }
                     clients_array.push(socket);
                     connectionCounter++;
                 } else {
@@ -53,15 +53,15 @@ var server = net.createServer(function(socket) {
                     message: 'ok',
                     joinedGroup: donnees.groupToJoin
                 }));
-				j=0;
-				while(j<clients_array.length){
-					if(clients_array[j].group.indexOf(donnees.groupToJoin) > -1 && clients_array[j].id !== socket.id)
-					clients_array[j].write(JSON.stringify({
-						type: 'message',
-						message:''+ socket.name + ' has now joined @' + donnees.groupToJoin
-					}));
-					j++;
-				}
+                j = 0;
+                while (j < clients_array.length) {
+                    if (clients_array[j].group.indexOf(donnees.groupToJoin) > -1 && clients_array[j].id !== socket.id)
+                        clients_array[j].write(JSON.stringify({
+                            type: 'message',
+                            message: '' + socket.name + ' has now joined @' + donnees.groupToJoin
+                        }));
+                    j++;
+                }
             }
 
             if (donnees.type == 'connectionEnd') {
@@ -84,13 +84,12 @@ var server = net.createServer(function(socket) {
                         type: 'QuitGroupConfirmation',
                         groupToQuit: donnees.groupToQuit
                     }));
+                } else {
+                    socket.write(JSON.stringify({
+                        type: 'QuitGroupConfirmation',
+                        groupToQuit: 'none'
+                    }));
                 }
-				else{
-					socket.write(JSON.stringify({
-						type: 'QuitGroupConfirmation',
-						groupToQuit: 'none'
-					}));
-				}
             }
 
             if (donnees.type == 'listOfGroups') {
@@ -122,29 +121,27 @@ var server = net.createServer(function(socket) {
                         if (socket.id !== clients_array[j].id) {
                             clients_array[j].write(JSON.stringify({
                                 type: 'message',
-                                message: '(From ' +socket.name + ' to main discussion) ' + donnees.message
+                                message: '(From ' + socket.name + ' to main discussion) ' + donnees.message
                             }));
                         }
                         j++;
                     }
-                }
-				else if (donnees.to=='onePerson') {
-					j=0;
-					var found = false;
-					console.log(j + 'bool:' +found);
-					while(j < clients_array.length && !found){
-						if(clients_array[j].name==donnees.person){
-							found=true;
-							clients_array[j].write(JSON.stringify({
-								type: 'message',
-								message: '(From ' + socket.name + ' to you) ' + donnees.message
-							}));
-						}
-						j++;
-					}
+                } else if (donnees.to == 'onePerson') {
+                    j = 0;
+                    var found = false;
+                    console.log(j + 'bool:' + found);
+                    while (j < clients_array.length && !found) {
+                        if (clients_array[j].name == donnees.person) {
+                            found = true;
+                            clients_array[j].write(JSON.stringify({
+                                type: 'message',
+                                message: '(From ' + socket.name + ' to you) ' + donnees.message
+                            }));
+                        }
+                        j++;
+                    }
 
-				}
-				else if (donnees.to == 'group') {
+                } else if (donnees.to == 'group') {
                     j = 0;
                     while (clients_array[j].id !== socket.id) {
                         j++;
@@ -157,7 +154,7 @@ var server = net.createServer(function(socket) {
                             if (socket.id !== clients_array[j].id && clients_array[j].group.indexOf(donnees.groupName) > -1) {
                                 clients_array[j].write(JSON.stringify({
                                     type: 'message',
-                                    message: '(From '+ socket.name + ' to @' + donnees.groupName + ') ' + donnees.message
+                                    message: '(From ' + socket.name + ' to @' + donnees.groupName + ') ' + donnees.message
                                 }));
                             }
                             j++;
