@@ -129,8 +129,6 @@ var server = net.createServer(function(socket) {
                     }
                 }
 				else if (donnees.to=='onePerson') {
-
-					console.log('Imhere');
 					j=0;
 					var found = false;
 					console.log(j + 'bool:' +found);
