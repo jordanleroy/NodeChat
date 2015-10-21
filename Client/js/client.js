@@ -27,7 +27,7 @@ client.connect(port, ip, function() {
         var input = process.stdin.read();
 
         if (input !== null) {
-            input = input.slice(0, input.length - 1);
+            input = input.slice(0, input.length - 2);
             if (input.startsWith('--')) {
                 if (input.startsWith('--quit')) {
                     if (input.indexOf(' ') > -1) {
@@ -45,7 +45,7 @@ client.connect(port, ip, function() {
                     console.log('Here is the documentation of the NodeChat\r');
                     console.log('To write to all members connected to NodeChat, type your message and press enter\r\n');
                     console.log('To write to a specific person : #\'personName\'\r');
-                    console.log('To show a list of all existing groups : --showGroups\r\n');
+                    console.log('To show a list of all groups you\'ve joined: --showGroups\r\n');
                     console.log('To join a group : --join \'groupname\'\r');
                     console.log('To write to a specific group : @\'groupname\' your Message\r');
                     console.log('To list all members of a group : --list \'groupName\'');
@@ -146,7 +146,7 @@ client.on('data', function(data) {
         }
         if (donnees.type == 'groupConfirmation') {
             if (donnees.message == 'ok')
-                console.log('(From server)  You have now joined the group :', donnees.joinedGroup);
+                console.log('(From server)  You have now joined the groups :', donnees.joinedGroups);
         }
 
         if (donnees.type == 'error') {
@@ -154,14 +154,15 @@ client.on('data', function(data) {
         }
 
         if (donnees.type == 'listOfGroups') {
-            var j = 0;
-            var tab = donnees.groups.split(';');
+            // var j = 0;
+            // var tab = donnees.groups.split(';');
             console.log('You have subscribed to the following groups : \r');
-            while (j < tab.length) {
-                if (tab[j] !== 'general')
-                    console.log('   -' + tab[j] + '\r');
-                j++;
-            }
+            // while (j < tab.length) {
+            //     if (tab[j] !== 'general')
+            //         console.log('   -' + tab[j] + '\r');
+            //     j++;
+            // }
+            console.log(donnees.groups);
         }
         if (donnees.type == 'listOfMembersOfAGroup') {
             var listOfMembers = donnees.list.split(';');
