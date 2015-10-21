@@ -4,8 +4,8 @@ var es = require('event-stream'); //import de la lib event-stream
 var argv = require('minimist')(process.argv.slice(2));
 
 var me = {
-    name: argv.name,
-    connected: false
+    name      : argv.name,
+    connected : false
 };
 
 var client = new net.Socket();
@@ -14,12 +14,12 @@ var port = argv.port;
 client.connect(port, ip, function() {
     client.write(
         JSON.stringify({
-            type: 'connectionQuery',
-            name: argv.name
+            type : 'connectionQuery',
+            name : argv.name
         }));
     process.on('SIGINT', function() {
         client.write(JSON.stringify({
-            type: 'connectionEnd',
+            type: 'connectionEnd'
         }));
     });
     process.stdin.on('readable', function() {
@@ -32,8 +32,8 @@ client.connect(port, ip, function() {
                 if (input.startsWith('--quit')) {
                     if (input.indexOf(' ') > -1) {
                         client.write(JSON.stringify({
-                            type: 'QuitGroup',
-                            groupToQuit: input.substr(input.indexOf(' ') + 1, input.length)
+                            type        : 'QuitGroup',
+                            groupToQuit : input.substr(input.indexOf(' ') + 1, input.length)
                         }));
                     } else {
                         client.write(JSON.stringify({
@@ -64,8 +64,8 @@ client.connect(port, ip, function() {
                         gLis = 'general';
                     }
                     client.write(JSON.stringify({
-                        type: 'listMembers',
-                        groupToList: gLis
+                        type        : 'listMembers',
+                        groupToList : gLis
                     }));
                 }
 
@@ -73,9 +73,9 @@ client.connect(port, ip, function() {
                     var indexOfGroupName = input.indexOf(' ');
                     var newGroup = input.substr(indexOfGroupName + 1);
                     client.write(JSON.stringify({
-                        type: 'JoinAGroupQuery',
-                        to: 'group',
-                        groupToJoin: newGroup
+                        type        : 'JoinAGroupQuery',
+                        to          : 'group',
+                        groupToJoin : newGroup
                     }));
                 }
             } else if (input.startsWith('@')) {
@@ -88,27 +88,27 @@ client.connect(port, ip, function() {
                     var groupToWrite = input.substr(1, input.indexOf(' ') - 1);
                     var messageToWrite = input.substr((input.indexOf(' ') + 1), input.length);
                     client.write(JSON.stringify({
-                        type: 'message',
-                        to: 'group',
-                        groupName: groupToWrite,
-                        message: messageToWrite
+                        type      : 'message',
+                        to        : 'group',
+                        groupName : groupToWrite,
+                        message   : messageToWrite
                     }));
                 }
             } else if (input.startsWith('#')) {
                 var personne = input.substr(1, input.indexOf(' ') - 1);
                 var message = input.substr((input.indexOf(' ') + 1), input.length);
                 client.write(JSON.stringify({
-                    type: 'message',
-                    to: 'onePerson',
-                    person: personne,
-                    message: message
+                    type    : 'message',
+                    to      : 'onePerson',
+                    person  : personne,
+                    message : message
                 }));
             } else {
                 client.write(
                     JSON.stringify({
-                        type: 'message',
-                        to: 'all',
-                        message: input
+                        type    : 'message',
+                        to      : 'all',
+                        message : input
                     }));
             }
         }
