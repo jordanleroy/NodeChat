@@ -83,7 +83,7 @@ var server = net.createServer(function(socket) {
                 } else {
                     socket.write(JSON.stringify({
                         type  : 'QuitGroupConfirmation',
-                        error : 'you don\'t belong to this group'
+                        error : 'You don\'t belong to this group'
                     }));
                 }
             }
@@ -137,7 +137,7 @@ var server = net.createServer(function(socket) {
             if (json_data.type == 'message') {
                 // Check the 'to' property to see the desired recipients
                 switch (json_data.to) {
-                    case 'all':
+                    case 'all': //write to all persons connected to the NodeChat
                         clients_array.forEach(function(client) {
                             if (socket.id !== client.id) {
                                 client.write(JSON.stringify({
@@ -147,10 +147,9 @@ var server = net.createServer(function(socket) {
                             }
                         });
                         break;
-                    case 'onePerson':
+                    case 'onePerson': //write to only one person
                         j = 0;
                         var found = false;
-                        console.log(j + 'bool:' + found);
                         while (j < clients_array.length && !found) {
                             if (clients_array[j].name == json_data.person) {
                                 found = true;
@@ -162,7 +161,7 @@ var server = net.createServer(function(socket) {
                             j++;
                         }
                         break;
-                    case 'group':
+                    case 'group':   //write to all members of the specified group
                         j = 0;
                         while (clients_array[j].id !== socket.id) {
                             j++;
