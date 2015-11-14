@@ -7,7 +7,7 @@ var mini = require('minimist'); //import de la lib minimist
 
 var clients_array = [];
 
-var j;
+// var j;
 
 
 
