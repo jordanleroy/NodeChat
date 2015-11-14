@@ -20,7 +20,7 @@ var server = net.createServer(function(socket) {
             case 'connectionEnd': // CLIENT wants to disconnect
                 disconnectClient(socket);
                 break;
-            case 'listOfGroups': // CLIENT wants to know the groups he's connected to
+            case 'listGroups': // CLIENT wants to know the groups he's connected to
                 listGroupsForClient(socket);
                 break;
             case 'listMembers': // CLIENT wants to know the participants of a specified group
@@ -40,23 +40,20 @@ server.listen(8080, '127.0.0.1');
 
 
 function connectClient(socket, json_data) {
-    socket.write(JSON.stringify({
-        type: 'connectionConfirmation',
-        connectionConfirmed: true
-    }));
     socket.id     = generateUID(); // Generate unique ID in case two clients have the same name
     socket.name   = json_data.name;
     socket.groups = ['general'];
 
-    // Tell all participants that this client is connected
-    clients_array.forEach(function(client) {
-        client.write(JSON.stringify({
-            type    : 'message',
-            to      : 'all',
-            message : socket.name + ' is now connected'
-        }));
-    });
 
+    socket.write(JSON.stringify({
+        type : 'connectionConfirmation',
+        id   : socket.id
+    }));
+
+    // Tell GENERAL group that this client is connected
+    sendGroupMessage(socket, 'general', 'Hey! I\'ve just arrived :)');
+
+    // Add client to our local client list
     clients_array.push(socket);
 }
 
@@ -64,45 +61,44 @@ function connectClient(socket, json_data) {
 function addClientToGroup(socket, json_data) {
     socket.groups.push(json_data.groupToJoin);
     socket.write(JSON.stringify({
-        type         : 'joinGroupConfirmation',
-        message      : 'ok',
-        joinedGroups : socket.groups
+        type   : 'joinGroupConfirmation',
+        groups : socket.groups
     }));
 
     // Tell group participants that this client has joined the group
     clients_array.forEach(function(client) {
-        if (client.groups.indexOf(json_data.groupToJoin) > -1 && client.id !== socket.id)
+        if (client.groups.indexOf(json_data.groupToJoin) > -1 && client.id !== socket.id) {
             client.write(JSON.stringify({
                 type    : 'message',
                 message : socket.name + ' has now joined @' + json_data.groupToJoin
             }));
+        }
     });
 }
 
 
 function removeClientFromGroup(socket, json_data) {
-    var group_index = socket.groups.indexOf(json_data.groupToQuit);
+    var group_index = socket.groups.indexOf(json_data.groupToLeave);
     if (group_index > -1) {
         socket.groups.splice(group_index, 1);
         socket.write(JSON.stringify({
-            type         : 'leaveGroupConfirmation',
-            joinedGroups : socket.groups
+            type      : 'leaveGroupConfirmation',
+            leftGroup : json_data.groupToLeave
         }));
     } else {
         socket.write(JSON.stringify({
-            type  : 'leaveGroupConfirmation',
-            error : 'You don\'t belong to this group'
+            type: 'error',
+            cause: 'You do not belong to this group'
         }));
     }
 }
 
 
 function disconnectClient(socket) {
-    console.log('Fermeture de connexion pour ' + socket.id);
+    console.log('Fermeture de connexion pour %s (%s)', socket.name, socket.id);
 
     socket.write(JSON.stringify({
-        type      : 'disconnectionConfirmation',
-        connected : 'false'
+        type : 'disconnectionConfirmation'
     }));
 
     // Remove client from our local list
@@ -129,14 +125,14 @@ function listMembersOfGroup(socket, json_data) {
         });
 
         socket.write(JSON.stringify({
-            type  : 'listOfMembersOfAGroup',
-            group : json_data.groupToList,
-            list  : members
+            type    : 'listOfMembersOfAGroup',
+            group   : json_data.groupToList,
+            members : members
         }));
     } else {
         socket.write(JSON.stringify({
-            type  : 'listOfMembersOfAGroup',
-            error : 'you don\'t belong to this group'
+            type  : 'error',
+            cause : 'you do not belong to this group'
         }));
     }
 }
@@ -144,18 +140,18 @@ function listMembersOfGroup(socket, json_data) {
 
 function sendMessage(socket, json_data) {
     // Check the 'to' property to see the desired recipients
-    switch (json_data.to) {
-        case 'all': //write to all persons connected to the NodeChat
+    switch (json_data.destination) {
+        case 'broadcast': //write to all persons connected to the groups the user belongs to
             sendBroadcastMessage(socket, json_data);
             break;
-        case 'single': //write to only one person
+        case 'unicast': //write to only one person
             sendSingleMessage(socket, json_data);
             break;
-        case 'group': //write to all members of the specified group
+        case 'multicast': //write to all members of the specified group
             sendGroupMessage(socket, json_data);
             break;
         default:
-            // TODO: display error
+            console.error('');
             break;
 
     }
@@ -166,8 +162,10 @@ function sendBroadcastMessage(socket, json_data) {
     clients_array.forEach(function(client) {
         if (socket.id !== client.id) {
             client.write(JSON.stringify({
-                type    : 'message',
-                message : '[BROADCAST][' + socket.name + ']' + json_data.message
+                type        : 'message',
+                destination : 'BROADCAST',
+                sender      : socket.name,
+                message     : json_data.message
             }));
         }
     });
@@ -176,30 +174,34 @@ function sendBroadcastMessage(socket, json_data) {
 
 function sendSingleMessage(socket, json_data) {
     if ( !clients_array.some(function (client){ // this function return false if it doesn't find any client
-        if (client.name === json_data.person) {
+        if (client.name === json_data.receiver) {
             client.write(JSON.stringify({
-                type: 'message',
-                message: '(From ' + socket.name + ' to you) ' + json_data.message
+                type        : 'message',
+                destination : 'PRIVATE',
+                sender      : socket.name,
+                message     : json_data.message
             }));
             return true;
         }
     })) {
         socket.write(JSON.stringify({
             type: 'error',
-            cause: 'Client not found.',
-            howTo: 'Please check the client name for typos.'
+            cause: 'Client not found',
+            howTo: 'Please check the client name for typos'
         }));
     }
 }
 
 
-function sendGroupMessage(socket, json_data) {
-    if (socket.groups.indexOf(json_data.groupName) > -1) { // Verify the user belongs to the group
+function sendGroupMessage(socket, groupName, message) {
+    if (socket.groups.indexOf(groupName) > -1) { // Verify the user belongs to the group
         clients_array.forEach(function (client){
-            if (socket.id !== client.id && client.groups.indexOf(json_data.groupName) > -1) {
+            if (socket.id !== client.id && client.groups.indexOf(groupName) > -1) {
                 client.write(JSON.stringify({
-                    type: 'message',
-                    message: '(From ' + socket.name + ' to @' + json_data.groupName + ') ' + json_data.message
+                    type        : 'message',
+                    destination : groupName,
+                    sender      : socket.name,
+                    message     : json_data.message
                 }));
             }
         });

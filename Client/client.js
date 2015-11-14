@@ -1,183 +1,204 @@
-//node client.js --name David --ip 127.0.0.1 --port 8080
-var net = require('net');
-var es = require('event-stream'); //import de la lib event-stream
+/*
+/ node client.js --name David --ip 127.0.0.1 --port 8080
+*/
+var net  = require('net');
 var argv = require('minimist')(process.argv.slice(2));
 
-var me = {
-    name      : argv.name,
-    connected : false
-};
+var self;
+self.name        = argv.name;
+self.server_ip   = argv.ip;
+self.server_port = argv.port;
+self.connected   = false;
+
+
+
 
 var client = new net.Socket();
-var ip = argv.ip;
-var port = argv.port;
-client.connect(port, ip, function() {
-    client.write(
-        JSON.stringify({
-            type : 'connectionRequest',
-            name : argv.name
-        }));
-    process.on('SIGINT', function() {
-        client.write(JSON.stringify({
-            type: 'connectionEnd'
-        }));
-    });
-    process.stdin.on('readable', function() {
-        process.stdin.setEncoding('utf-8');
-        var input = process.stdin.read();
-
-        if (input !== null) {
-            input = input.slice(0, input.length - 2);
-            if (input.startsWith('--')) {
-                if (input.startsWith('--quit')) {
-                    if (input.indexOf(' ') > -1) {
-                        client.write(JSON.stringify({
-                            type        : 'leaveGroup',
-                            groupToQuit : input.substr(input.indexOf(' ') + 1, input.length)
-                        }));
-                    } else {
-                        client.write(JSON.stringify({
-                            type: 'connectionEnd',
-                        }));
-                    }
-                }
-                if (input == '--help') {
-                    console.log('Here is the documentation of the NodeChat\r');
-                    console.log('To write to all members connected to NodeChat, type your message and press enter\r\n');
-                    console.log('To write to a specific person : #\'personName\'\r');
-                    console.log('To show a list of all groups you\'ve joined: --showGroups\r\n');
-                    console.log('To join a group : --join \'groupname\'\r');
-                    console.log('To write to a specific group : @\'groupname\' your Message\r');
-                    console.log('To list all members of a group : --list \'groupName\'');
-                    console.log('To quit a group : --quit \'groupname\'\r\n');
-                    console.log('To quit NodeChat press \'Ctrl+C\' or type --quit and press enter\r');
-                }
-                if (input.startsWith('--showGroups')) {
-                    client.write(JSON.stringify({
-                        type: 'listOfGroups'
-                    }));
-                }
-                if (input.startsWith('--list')) {
-                    if (input.indexOf(' ') > -1)
-                        gLis = input.substr(input.indexOf(' ') + 1, input.length);
-                    else {
-                        gLis = 'general';
-                    }
-                    client.write(JSON.stringify({
-                        type        : 'listMembers',
-                        groupToList : gLis
-                    }));
-                }
-
-                if (input.startsWith('--join')) {
-                    var indexOfGroupName = input.indexOf(' ');
-                    var newGroup = input.substr(indexOfGroupName + 1);
-                    client.write(JSON.stringify({
-                        type        : 'joinGroup',
-                        to          : 'group',
-                        groupToJoin : newGroup
-                    }));
-                }
-            } else if (input.startsWith('@')) {
-
-                if (input.startsWith('@test')) {
-                    client.write(JSON.stringify({
-                        type: 'test'
-                    }));
-                } else if (input.startsWith('@')) {
-                    var groupToWrite = input.substr(1, input.indexOf(' ') - 1);
-                    var messageToWrite = input.substr((input.indexOf(' ') + 1), input.length);
-                    client.write(JSON.stringify({
-                        type      : 'message',
-                        to        : 'group',
-                        groupName : groupToWrite,
-                        message   : messageToWrite
-                    }));
-                }
-            } else if (input.startsWith('#')) {
-                var personne = input.substr(1, input.indexOf(' ') - 1);
-                var message = input.substr((input.indexOf(' ') + 1), input.length);
-                client.write(JSON.stringify({
-                    type    : 'message',
-                    to      : 'single',
-                    person  : personne,
-                    message : message
-                }));
-            } else {
-                client.write(
-                    JSON.stringify({
-                        type    : 'message',
-                        to      : 'all',
-                        message : input
-                    }));
-            }
-        }
-    });
-
-});
-client.on('data', function(data) {
-
-    var donnees = JSON.parse(data);
-    if (donnees.hasOwnProperty('type')) {
-        if (donnees.type == 'connectionConfirmation') {
-            me.id = donnees.id;
-            me.connected = donnees.connectionConfirmed;
-            if (me.connected)
-                console.log('You are now connected    --    For help, type \'--help\'');
-            else {
-                if (donnees.cause == 'noName')
-                    console.log('You have to reconnect and fill the name field');
-                else
-                    console.log('An error as occured. Please try again later');
-            }
-        }
-        if (donnees.type == 'disconnectionConfirmation') {
-            console.log('You are now disconnected');
-            client.end();
-            me.connected = false;
-            process.exit();
-        }
-
-        if (donnees.type == 'quitGroupConfirmation') {
-            if (donnees.groupToQuit == 'none')
-                console.log('You do not belong to this group');
-            else
-                console.log("You are now out of the group", donnees.groupToQuit);
-        }
-        if (donnees.type == 'joinGroupConfirmation') {
-            if (donnees.message == 'ok')
-                console.log('(From server)  You have now joined the groups :', donnees.joinedGroups);
-        }
-
-        if (donnees.type == 'error') {
-            console.log(donnees.cause, donnees.howTo);
-        }
-
-        if (donnees.type == 'listOfGroups') {
-            console.log('You have subscribed to the following groups : \r');
-            console.log(donnees.groups);
-        }
-        if (donnees.type == 'listOfMembersOfAGroup') {
-            var listOfMembers = donnees.list.split(';');
-            var k = 0;
-            console.log('The members of the group ' + donnees.group + ' are:\r');
-            while (k < listOfMembers.length) {
-                if (listOfMembers[k])
-                    console.log('   -' + listOfMembers[k] + '\r');
-                k++;
-            }
-        }
-
-        if (donnees.type == 'test') {
-            console.log(donnees.message);
-        }
-        if (donnees.type == 'message')
-            console.log(donnees.message);
-
-    }
-
+client.connect(self.server_port, self.server_ip, function() {
+    client.write(JSON.stringify({
+        type: 'connectionRequest',
+        name: argv.name
+    }));
+    console.log('Connecting... Waiting for response...');
 });
 
 client.on('close', function() {
     console.log('Connection closed');
+});
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////       RECEIVE       ////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+client.on('data', function(data) {
+    var json_data = JSON.parse(data);
+
+    switch (json_data.type) {
+        case 'connectionConfirmation':
+            self.id = json_data.id;
+            self.connected = true;
+            console.log('You are now connected with ID: ' + self.id);
+            console.log('For help, type \'--help\'');
+            break;
+        case 'disconnectionConfirmation':
+            client.end();
+            self.connected = false;
+            console.log('You are now disconnected');
+            process.exit();
+            break;
+        case 'joinGroupConfirmation':
+            console.log('You now belong to these groups :', json_data.groups);
+            break;
+        case 'leaveGroupConfirmation':
+            console.log("You are now out of the group", json_data.groupToQuit);
+            break;
+        case 'listOfGroups':
+            console.log('You belong to these groups :', json_data.groups);
+            break;
+        case 'listOfMembersOfAGroup':
+            console.log('The members of the group %s are : ' + json_data.members, json_data.group);
+            break;
+        case 'message':
+            console.log('[%s][%s]: %s', json_data.destination, json_data.sender, json_data.message);
+            break;
+        case 'error':
+            console.error(json_data.cause);
+            if (json_data.howTo)
+                console.error(json_data.howTo);
+            break;
+    }
+});
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////       SEND       //////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+process.stdin.on('readable', function() {
+    process.stdin.setEncoding('utf-8');
+    var input = process.stdin.read();
+    if (input) {
+        input = input.slice(0, input.length - 2); // TODO: add comment for this line
+
+        if (input.startsWith('--')) {
+            if (input === '--help') {
+                console.log('This is the documentation for NodeChat.js\r');
+                console.log('To show a list of all groups you\'ve joined: --list-groups\r\n');
+                console.log('To join a group : --join \'groupname\'\r');
+                console.log('To leave a group : --leave \'groupname\'\r\n');
+                console.log('To list all members of a specific group : --list-members \'groupName\'');
+                console.log('To write to all members of all your groups, just type your message directly\r\n');
+                console.log('To write to a specific group : @\'groupname\' your Message\r');
+                console.log('To write to a specific person : #\'personName\'\r');
+                console.log('To exit NodeChat press \'Ctrl+C\' or type --exit\r');
+            }
+
+            if (input === '--list-groups') {
+                client.write(JSON.stringify({
+                    type: 'listGroups'
+                }));
+            }
+
+            if (input.startsWith('--join')) {
+                if (input.split(' ').length < 2) {
+                    console.error('please include group name');
+                } else {
+                    var groupToJoin = input.split(' ')[1];
+                    client.write(JSON.stringify({
+                        type        : 'joinGroup',
+                        groupToJoin : groupToJoin
+                    }));
+                }
+            }
+
+            if (input.startsWith('--leave')) {
+                if (input.split(' ').length < 2) {
+                    console.error('please include group name');
+                } else {
+                    var groupToLeave = input.split(' ')[1];
+                    client.write(JSON.stringify({
+                        type         : 'leaveGroup',
+                        groupToLeave : groupToLeave
+                    }));
+                }
+            }
+
+            if (input.startsWith('--list-members')) {
+                if (input.split(' ').length < 2) {
+                    console.error('please include group name');
+                } else {
+                    var groupToList = input.split(' ')[1];
+                    client.write(JSON.stringify({
+                        type        : 'listMembers',
+                        groupToList : groupToList
+                    }));
+                }
+            }
+
+
+            if (input === '--exit') {
+                disconnect();
+            }
+        } else if (input.startsWith('@')) {
+            var groupName = input.split(' ')[0].substr(1); // also remove the @ symbol
+            if (!groupName) {
+                console.error('please include group name');
+            } else if (input.split(' ').length < 2) {
+                    console.error('please include a message');
+            } else {
+                var groupMessage = input.split(' ')[1];
+                client.write(JSON.stringify({
+                    type        : 'message',
+                    destination : 'multicast',
+                    groupName   : groupName,
+                    message     : groupMessage
+                }));
+            }
+        } else if (input.startsWith('#')) {
+            var receiver = input.split(' ')[0].substr(1); // also remove the # symbol
+            if (!receiver) {
+                console.error('please include receiver\'s name');
+            } else if (input.split(' ').length < 2) {
+                    console.error('please include a message');
+            } else {
+                var message = input.split(' ')[1];
+                client.write(JSON.stringify({
+                    type        : 'message',
+                    destination : 'unicast',
+                    receiver    : receiver,
+                    message     : message
+                }));
+            }
+        } else {
+            var broadcastMessage = input;
+            client.write(JSON.stringify({
+                type        : 'message',
+                destination : 'broadcast',
+                message     : broadcastMessage
+            }));
+        }
+    }
+});
+
+
+
+
+function disconnect() {
+    client.write(JSON.stringify({
+        type: 'connectionEnd'
+    }));
+}
+
+
+process.on('SIGINT', function() {
+    disconnect();
 });
