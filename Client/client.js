@@ -14,7 +14,7 @@ var port = argv.port;
 client.connect(port, ip, function() {
     client.write(
         JSON.stringify({
-            type : 'connectionQuery',
+            type : 'connectionRequest',
             name : argv.name
         }));
     process.on('SIGINT', function() {
@@ -32,7 +32,7 @@ client.connect(port, ip, function() {
                 if (input.startsWith('--quit')) {
                     if (input.indexOf(' ') > -1) {
                         client.write(JSON.stringify({
-                            type        : 'QuitGroup',
+                            type        : 'leaveGroup',
                             groupToQuit : input.substr(input.indexOf(' ') + 1, input.length)
                         }));
                     } else {
@@ -73,7 +73,7 @@ client.connect(port, ip, function() {
                     var indexOfGroupName = input.indexOf(' ');
                     var newGroup = input.substr(indexOfGroupName + 1);
                     client.write(JSON.stringify({
-                        type        : 'JoinAGroupQuery',
+                        type        : 'joinGroup',
                         to          : 'group',
                         groupToJoin : newGroup
                     }));
@@ -99,7 +99,7 @@ client.connect(port, ip, function() {
                 var message = input.substr((input.indexOf(' ') + 1), input.length);
                 client.write(JSON.stringify({
                     type    : 'message',
-                    to      : 'onePerson',
+                    to      : 'single',
                     person  : personne,
                     message : message
                 }));
@@ -138,13 +138,13 @@ client.on('data', function(data) {
             process.exit();
         }
 
-        if (donnees.type == 'QuitGroupConfirmation') {
+        if (donnees.type == 'quitGroupConfirmation') {
             if (donnees.groupToQuit == 'none')
                 console.log('You do not belong to this group');
             else
                 console.log("You are now out of the group", donnees.groupToQuit);
         }
-        if (donnees.type == 'groupConfirmation') {
+        if (donnees.type == 'joinGroupConfirmation') {
             if (donnees.message == 'ok')
                 console.log('(From server)  You have now joined the groups :', donnees.joinedGroups);
         }
