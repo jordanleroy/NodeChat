@@ -2,7 +2,7 @@ var net  = require('net'); //import de la lib net
 
 var clients_array = [];
 
-var server = net.createServer(function(socket) {
+net.createServer(function(socket) {
     socket.setEncoding('utf8');
 
     socket.on('data', function(data) {
@@ -32,8 +32,7 @@ var server = net.createServer(function(socket) {
         }
     });
     socket.on('error', console.error);
-});
-server.listen(8080, '127.0.0.1');
+}).listen(8080, '127.0.0.1');
 
 
 
@@ -53,6 +52,8 @@ function connectClient(socket, json_data) {
     // Tell GENERAL group that this client is connected
     sendGroupMessage(socket, 'general', 'Hey! I\'ve just arrived :)');
 
+    console.log('%s (%s) s\'est connecté.', socket.name, socket.id);
+
     // Add client to our local client list
     clients_array.push(socket);
 }
@@ -66,14 +67,7 @@ function addClientToGroup(socket, json_data) {
     }));
 
     // Tell group participants that this client has joined the group
-    clients_array.forEach(function(client) {
-        if (client.groups.indexOf(json_data.groupToJoin) > -1 && client.id !== socket.id) {
-            client.write(JSON.stringify({
-                type    : 'message',
-                message : socket.name + ' has now joined @' + json_data.groupToJoin
-            }));
-        }
-    });
+    sendGroupMessage(socket, json_data.groupToJoin, 'Hey! I\'ve just arrived :)');
 }
 
 
@@ -95,7 +89,7 @@ function removeClientFromGroup(socket, json_data) {
 
 
 function disconnectClient(socket) {
-    console.log('Fermeture de connexion pour %s (%s)', socket.name, socket.id);
+    console.error('%s (%s) s\'est déconnecté.', socket.name, socket.id);
 
     socket.write(JSON.stringify({
         type : 'disconnectionConfirmation'
@@ -148,7 +142,7 @@ function sendMessage(socket, json_data) {
             sendSingleMessage(socket, json_data);
             break;
         case 'multicast': //write to all members of the specified group
-            sendGroupMessage(socket, json_data);
+            sendGroupMessage(socket, json_data.groupName, json_data.message);
             break;
         default:
             console.error('');
@@ -201,7 +195,7 @@ function sendGroupMessage(socket, groupName, message) {
                     type        : 'message',
                     destination : groupName,
                     sender      : socket.name,
-                    message     : json_data.message
+                    message     : message
                 }));
             }
         });

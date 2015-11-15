@@ -4,17 +4,9 @@
 var net  = require('net');
 var argv = require('minimist')(process.argv.slice(2));
 
-var self;
-self.name        = argv.name;
-self.server_ip   = argv.ip;
-self.server_port = argv.port;
-self.connected   = false;
-
-
-
 
 var client = new net.Socket();
-client.connect(self.server_port, self.server_ip, function() {
+client.connect(argv.port, argv.ip, function() {
     client.write(JSON.stringify({
         type: 'connectionRequest',
         name: argv.name
@@ -24,6 +16,7 @@ client.connect(self.server_port, self.server_ip, function() {
 
 client.on('close', function() {
     console.log('Connection closed');
+    process.exit();
 });
 
 
@@ -38,14 +31,11 @@ client.on('data', function(data) {
 
     switch (json_data.type) {
         case 'connectionConfirmation':
-            self.id = json_data.id;
-            self.connected = true;
-            console.log('You are now connected with ID: ' + self.id);
+            console.log('You are now connected with ID: ' + json_data.id);
             console.log('For help, type \'--help\'');
             break;
         case 'disconnectionConfirmation':
             client.end();
-            self.connected = false;
             console.log('You are now disconnected');
             process.exit();
             break;
@@ -53,7 +43,7 @@ client.on('data', function(data) {
             console.log('You now belong to these groups :', json_data.groups);
             break;
         case 'leaveGroupConfirmation':
-            console.log("You are now out of the group", json_data.groupToQuit);
+            console.log("You are now out of the group", json_data.leftGroup);
             break;
         case 'listOfGroups':
             console.log('You belong to these groups :', json_data.groups);
@@ -87,19 +77,19 @@ process.stdin.on('readable', function() {
     process.stdin.setEncoding('utf-8');
     var input = process.stdin.read();
     if (input) {
-        input = input.slice(0, input.length - 2); // TODO: add comment for this line
+        input = input.trim(); // remove trailing whitespace
 
         if (input.startsWith('--')) {
             if (input === '--help') {
-                console.log('This is the documentation for NodeChat.js\r');
+                console.log('This is the documentation for NodeChat.js\r\n');
                 console.log('To show a list of all groups you\'ve joined: --list-groups\r\n');
-                console.log('To join a group : --join \'groupname\'\r');
-                console.log('To leave a group : --leave \'groupname\'\r\n');
-                console.log('To list all members of a specific group : --list-members \'groupName\'');
-                console.log('To write to all members of all your groups, just type your message directly\r\n');
-                console.log('To write to a specific group : @\'groupname\' your Message\r');
-                console.log('To write to a specific person : #\'personName\'\r');
-                console.log('To exit NodeChat press \'Ctrl+C\' or type --exit\r');
+                console.log('To join a group: --join \'groupname\'\r');
+                console.log('To leave a group: --leave \'groupname\'\r');
+                console.log('To list all members of a specific group: --list-members \'groupName\'\n');
+                console.log('To write to all members of all your groups: just type your message directly\r');
+                console.log('To write to a specific group: @groupname your Message\r');
+                console.log('To write to a specific person: #personName\r\n');
+                console.log('To exit NodeChat: press \'Ctrl+C\' or type --exit\r');
             }
 
             if (input === '--list-groups') {

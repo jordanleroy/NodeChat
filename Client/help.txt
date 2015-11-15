@@ -1,9 +1,0 @@
-Here is the documentation of the NodeChat
-To write to all members connected to NodeChat, type your message and press enter
-To write to a specific person : #'personName'
-To show a list of all existing groups : --showGroups
-To join a group : --join 'groupname'
-To write to a specific group : @'groupname' your Message
-To list all members of a group : --list 'groupName'
-To quit a group : --quit 'groupname'
-To quit NodeChat press 'Ctrl+C' or type --quit and press enter
