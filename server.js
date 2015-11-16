@@ -55,7 +55,9 @@ net.createServer(function(socket) {
 
 
 
-
+var os = require('os');
+var interfaces = os.networkInterfaces();
+console.dir(interfaces);
 
 
 function connectClient(socket, json_data) {
