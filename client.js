@@ -106,7 +106,9 @@ process.stdin.on('readable', function() {
                 if (input.split(' ').length < 2) {
                     console.error('please include group name');
                 } else {
-                    var groupToJoin = input.split(' ')[1];
+                    var groupToJoin = input.split(' ');
+                    groupToJoin.shift();
+                    groupToJoin = groupToJoin.join(' ');
                     client.write(JSON.stringify({
                         type        : 'joinGroup',
                         groupToJoin : groupToJoin
@@ -118,7 +120,9 @@ process.stdin.on('readable', function() {
                 if (input.split(' ').length < 2) {
                     console.error('please include group name');
                 } else {
-                    var groupToLeave = input.split(' ')[1];
+                    var groupToLeave = input.split(' ');
+                    groupToLeave.shift();
+                    groupToLeave = groupToLeave.join(' ');
                     client.write(JSON.stringify({
                         type         : 'leaveGroup',
                         groupToLeave : groupToLeave
@@ -130,7 +134,9 @@ process.stdin.on('readable', function() {
                 if (input.split(' ').length < 2) {
                     console.error('please include group name');
                 } else {
-                    var groupToList = input.split(' ')[1];
+                    var groupToList = input.split(' ');
+                    groupToList.shift();
+                    groupToList = groupToList.join(' ');
                     client.write(JSON.stringify({
                         type        : 'listMembers',
                         groupToList : groupToList
@@ -149,7 +155,9 @@ process.stdin.on('readable', function() {
             } else if (input.split(' ').length < 2) {
                     console.error('please include a message');
             } else {
-                var groupMessage = input.split(' ')[1];
+                var groupMessage = input.split(' ');
+                groupMessage.shift();
+                groupMessage = groupMessage.join(' ');
                 client.write(JSON.stringify({
                     type        : 'message',
                     destination : 'multicast',
@@ -164,7 +172,9 @@ process.stdin.on('readable', function() {
             } else if (input.split(' ').length < 2) {
                     console.error('please include a message');
             } else {
-                var message = input.split(' ')[1];
+                var message = input.split(' ');
+                message.shift();
+                message = message.join(' ');
                 client.write(JSON.stringify({
                     type        : 'message',
                     destination : 'unicast',
