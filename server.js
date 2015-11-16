@@ -1,4 +1,4 @@
-var net = require('net'); //import de la lib net
+var net = require('net');
 var os  = require('os');
 
 var clients_array = [];
@@ -51,13 +51,6 @@ net.createServer(function(socket) {
         console.log(IP_ADDRESS + ':8080');
     });
 });
-
-
-
-
-var os = require('os');
-var interfaces = os.networkInterfaces();
-console.dir(interfaces);
 
 
 function connectClient(socket, json_data) {
