@@ -1,4 +1,5 @@
-var net  = require('net'); //import de la lib net
+var net = require('net'); //import de la lib net
+var os  = require('os');
 
 var clients_array = [];
 
@@ -32,7 +33,26 @@ net.createServer(function(socket) {
         }
     });
     socket.on('error', console.error);
-}).listen(8080, '127.0.0.1');
+}).listen(8080, function(data) {
+    var interfaces   = os.networkInterfaces();
+    var IP_ADDRESSES = [];
+    for (var i in interfaces) {
+        for (var j in interfaces[i]) {
+            var address = interfaces[i][j];
+            if (address.family === 'IPv4') {
+                IP_ADDRESSES.push(address.address);
+            }
+        }
+    }
+
+
+    console.log('SERVER UP. Listening on the following addresses:');
+    IP_ADDRESSES.forEach(function(IP_ADDRESS) {
+        console.log(IP_ADDRESS + ':8080');
+    });
+});
+
+
 
 
 
