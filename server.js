@@ -35,7 +35,9 @@ net.createServer(function(socket) {
 }).listen(8080, '127.0.0.1');
 
 
-
+var os = require('os');
+var interfaces = os.networkInterfaces();
+console.dir(interfaces);
 
 
 function connectClient(socket, json_data) {

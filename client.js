@@ -3,7 +3,13 @@
 */
 var net  = require('net');
 var argv = require('minimist')(process.argv.slice(2));
+var connectionPort;
 
+if(argv.port !== '')
+    connectionPort = argv.port;
+else {
+    connectionPort = '8080';
+}
 
 var client = new net.Socket();
 client.connect(argv.port, argv.ip, function() {
@@ -18,8 +24,6 @@ client.on('close', function() {
     console.log('Connection closed');
     process.exit();
 });
-
-
 
 
 
@@ -84,11 +88,11 @@ process.stdin.on('readable', function() {
                 console.log('This is the documentation for NodeChat.js\r\n');
                 console.log('To show a list of all groups you\'ve joined: --list-groups\r\n');
                 console.log('To join a group: --join \'groupname\'\r');
-                console.log('To leave a group: --leave \'groupname\'\r');
+                console.log('To leave a group: --leave \'groupname\'\r\n');
                 console.log('To list all members of a specific group: --list-members \'groupName\'\n');
                 console.log('To write to all members of all your groups: just type your message directly\r');
-                console.log('To write to a specific group: @groupname your Message\r');
-                console.log('To write to a specific person: #personName\r\n');
+                console.log('To write to a specific group: @groupname message\r');
+                console.log('To write to a specific person: #personName message\r\n');
                 console.log('To exit NodeChat: press \'Ctrl+C\' or type --exit\r');
             }
 
