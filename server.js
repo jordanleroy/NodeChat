@@ -3,7 +3,7 @@ var os  = require('os');
 var gpio = require("pi-gpio");
 
 var clients_array = [];
-var gpioPin = 36;
+var gpioPin = 25;
 var intervalId;
 var durationId;
 
@@ -58,8 +58,8 @@ net.createServer(function(socket) {
     //Init gpioPin as an output
     gpio.open(gpioPin, "output", function(err) {
         var on = 1;
-        gpio.write(gpioPin, 1, function() {          // Set pin 16 high (1)
-            gpio.close(gpioPin);                     // Close pin 16 
+        gpio.write(gpioPin, 1, function() {          // Set pin high (1)
+            gpio.close(gpioPin);                     // Close pin
         });
     });
 
