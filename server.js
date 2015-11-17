@@ -3,7 +3,7 @@ var os  = require('os');
 var gpio = require("pi-gpio");
 
 var clients_array = [];
-var gpioPin = 25;
+var gpioPin = 22;
 var intervalId;
 var durationId;
 
