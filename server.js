@@ -42,11 +42,13 @@ net.createServer(function(socket) {
         //Init gpioPin as an output
         gpio.open(gpioPin, "output", function(err) {
             var on = 1;
-            for (i = 0; i < 6; i++) {
+            function blink() {
                 gpio.write(gpioPin, on, function() {
                     on = (on + 1) % 2;
                 });
-                setTimeout(null, 100);
+            }
+            for (i = 0; i < 6; i++) {
+                setTimeout(blink, 1000);
             }
             gpio.close(gpioPin);
         });
