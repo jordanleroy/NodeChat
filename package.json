@@ -9,7 +9,7 @@
     "dependencies": {
         "net": ">= 1.0.2",
         "minimist": ">= 1.2.0",
-        "rpi-gpio": ">=0.7.0"
+        "pi-gpio": ">=0.0.8"
     },
     "repository": {
         "type": "git",
