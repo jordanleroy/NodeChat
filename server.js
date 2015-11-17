@@ -58,11 +58,9 @@ net.createServer(function(socket) {
     //Init gpioPin as an output
     gpio.open(gpioPin, "output", function(err) {
         var on = 1;
-        intervalId = setInterval(function() {
-            gpio.write(gpioPin, on, function() { // toggle pin between high (1) and low (0)
-                on = (on + 1) % 2;
-            });
-        }, 100);
+        gpio.write(gpioPin, 1, function() {          // Set pin 16 high (1)
+            gpio.close(gpioPin);                     // Close pin 16 
+        });
     });
 
 
