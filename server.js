@@ -37,6 +37,19 @@ net.createServer(function(socket) {
                 sendMessage(socket, json_data);
                 break;
         }
+
+
+        //Init gpioPin as an output
+        gpio.open(gpioPin, "output", function(err) {
+            var on = 1;
+            for (i = 0; i < 6; i++) {
+                gpio.write(gpioPin, on, function() {
+                    on = (on + 1) % 2;
+                });
+                setTimeout(null, 50);
+            }
+            gpio.close(gpioPin);
+        });
     });
 
     socket.on('error', console.error);
@@ -52,17 +65,6 @@ net.createServer(function(socket) {
             }
         }
     }
-
-
-
-    //Init gpioPin as an output
-    gpio.open(gpioPin, "output", function(err) {
-        var on = 1;
-        gpio.write(gpioPin, 1, function() {          // Set pin high (1)
-            gpio.close(gpioPin);                     // Close pin
-        });
-    });
-
 
 
 
