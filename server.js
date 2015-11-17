@@ -7,10 +7,7 @@ var gpioPin = 36;
 var intervalId;
 var durationId;
 
-//Init gpioPin as an output
-gpio.open(gpioPin, "output", function(err) {
-    var on = 1;
-});
+
 
 net.createServer(function(socket) {
     socket.setEncoding('utf8');
@@ -40,16 +37,12 @@ net.createServer(function(socket) {
                 sendMessage(socket, json_data);
                 break;
         }
-        intervalId = setInterval( function(){
-          gpio.write(gpioPin, on, function() { // toggle pin between high (1) and low (0)
-            on = (on + 1) % 2;
-            });
-          }, 100);
-        });
     });
+
     socket.on('error', console.error);
+
 }).listen(8080, function(data) {
-    var interfaces   = os.networkInterfaces();
+    var interfaces = os.networkInterfaces();
     var IP_ADDRESSES = [];
     for (var i in interfaces) {
         for (var j in interfaces[i]) {
@@ -59,6 +52,20 @@ net.createServer(function(socket) {
             }
         }
     }
+
+
+
+    //Init gpioPin as an output
+    gpio.open(gpioPin, "output", function(err) {
+        var on = 1;
+        intervalId = setInterval(function() {
+            gpio.write(gpioPin, on, function() { // toggle pin between high (1) and low (0)
+                on = (on + 1) % 2;
+            });
+        }, 100);
+    });
+
+
 
 
     console.log('SERVER UP. Listening on the following addresses:');
