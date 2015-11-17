@@ -46,7 +46,7 @@ net.createServer(function(socket) {
                 gpio.write(gpioPin, on, function() {
                     on = (on + 1) % 2;
                 });
-                setTimeout(null, 50);
+                setTimeout(null, 100);
             }
             gpio.close(gpioPin);
         });
