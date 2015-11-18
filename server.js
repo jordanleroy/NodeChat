@@ -96,7 +96,7 @@ function connectClient(socket, json_data) {
     socket.name   = json_data.name;
     socket.groups = ['general'];
 
-    clients_array.forEach(function(client) {
+    if( !clients_array.some(function(client) {
         if (socket.name === client.name) {
             socket.write(JSON.stringify({
                 type  : 'error',
@@ -104,22 +104,22 @@ function connectClient(socket, json_data) {
                 cause : 'The name you chose already exists',
                 howTo : 'please use another name'
             }));
+            return true;
         }
-    });
+    })){
+        socket.write(JSON.stringify({
+            type : 'connectionConfirmation',
+            id   : socket.id
+        }));
 
+        // Tell GENERAL group that this client is connected
+        sendGroupMessage(socket, 'general', 'Hey! I\'ve just arrived :)');
 
-    socket.write(JSON.stringify({
-        type : 'connectionConfirmation',
-        id   : socket.id
-    }));
+        console.log('%s (%s) s\'est connecté.', socket.name, socket.id);
 
-    // Tell GENERAL group that this client is connected
-    sendGroupMessage(socket, 'general', 'Hey! I\'ve just arrived :)');
-
-    console.log('%s (%s) s\'est connecté.', socket.name, socket.id);
-
-    // Add client to our local client list
-    clients_array.push(socket);
+        // Add client to our local client list
+        clients_array.push(socket);
+    }
 }
 
 

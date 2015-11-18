@@ -63,7 +63,7 @@ client.on('data', function(data) {
             if (json_data.howTo)
                 console.error(json_data.howTo);
             if (json_data.fatal)
-                disconnect();
+                process.exit();
             break;
     }
 });
