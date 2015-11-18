@@ -3,14 +3,11 @@ var os  = require('os');
 var gpio = require("pi-gpio");
 
 var clients_array = [];
-var gpioPin = 36;
+var gpioPin = 22;
 var intervalId;
 var durationId;
 
-//Init gpioPin as an output
-gpio.open(gpioPin, "output", function(err) {
-    var on = 1;
-});
+
 
 net.createServer(function(socket) {
     socket.setEncoding('utf8');
@@ -40,16 +37,27 @@ net.createServer(function(socket) {
                 sendMessage(socket, json_data);
                 break;
         }
-        intervalId = setInterval( function(){
-          gpio.write(gpioPin, on, function() { // toggle pin between high (1) and low (0)
-            on = (on + 1) % 2;
-            });
-          }, 100);
+
+
+        //Init gpioPin as an output
+        gpio.open(gpioPin, "output", function(err) {
+            var on = 1;
+            function blink() {
+                gpio.write(gpioPin, on, function() {
+                    on = (on + 1) % 2;
+                });
+            }
+            for (i = 0; i < 6; i++) {
+                setTimeout(blink, 1000);
+            }
+            gpio.close(gpioPin);
         });
     });
+
     socket.on('error', console.error);
+
 }).listen(8080, function(data) {
-    var interfaces   = os.networkInterfaces();
+    var interfaces = os.networkInterfaces();
     var IP_ADDRESSES = [];
     for (var i in interfaces) {
         for (var j in interfaces[i]) {
@@ -59,6 +67,7 @@ net.createServer(function(socket) {
             }
         }
     }
+
 
 
     console.log('SERVER UP. Listening on the following addresses:');
