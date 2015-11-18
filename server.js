@@ -1,11 +1,10 @@
 var net = require('net');
 var os  = require('os');
-var gpio = require("pi-gpio");
+var Gpio = require('onoff').Gpio, // Constructor function for Gpio objects.
+  led = new Gpio(25, 'out'),      // Export GPIO #25 as an output.
+  iv;
 
 var clients_array = [];
-var gpioPin = 22;
-var intervalId;
-var durationId;
 
 
 
@@ -39,19 +38,18 @@ net.createServer(function(socket) {
         }
 
 
-        //Init gpioPin as an output
-        gpio.open(gpioPin, "output", function(err) {
-            var on = 1;
-            function blink() {
-                gpio.write(gpioPin, on, function() {
-                    on = (on + 1) % 2;
-                });
-            }
-            for (i = 0; i < 6; i++) {
-                setTimeout(blink, 1000);
-            }
-            gpio.close(gpioPin);
-        });
+        // Toggle the state of the LED on GPIO #25 every 200ms.
+        // Here synchronous methods are used. Asynchronous methods are also available.
+        iv = setInterval(function() {
+            led.writeSync(led.readSync() ^ 1); // 1 = on, 0 = off :)
+        }, 200);
+
+        // Stop blinking the LED and turn it off after 5 seconds.
+        setTimeout(function() {
+            clearInterval(iv); // Stop blinking
+            led.writeSync(0); // Turn LED off.
+            led.unexport(); // Unexport GPIO and free resources
+        }, 3000);
     });
 
     socket.on('error', console.error);
@@ -80,16 +78,6 @@ net.createServer(function(socket) {
 
 
 
-
-// durationId= setTimeout( function(){
-//   clearInterval(intervalId);
-//   clearTimeout(durationId);
-//   console.log('10 seconds blinking completed');
-//   gpio.write(gpioPin, 0, function() { // turn off pin 16
-//     gpio.close(gpioPin); // then Close pin 16
-//     process.exit(0); // and terminate the program
-//   });
-// }, 10000); // duration in mS
 
 function connectClient(socket, json_data) {
     socket.id     = generateUID(); // Generate unique ID in case two clients have the same name
