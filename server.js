@@ -43,14 +43,14 @@ net.createServer(function(socket) {
         // Here synchronous methods are used. Asynchronous methods are also available.
         iv = setInterval(function() {
             led.writeSync(led.readSync() ^ 1); // 1 = on, 0 = off :)
-        }, 100);
+        }, 50);
 
         // Stop blinking the LED and turn it off after 5 seconds.
         setTimeout(function() {
             clearInterval(iv); // Stop blinking
             led.writeSync(0); // Turn LED off.
             led.unexport(); // Unexport GPIO and free resources
-        }, 1000);
+        }, 200);
     });
 
     socket.on('error', console.error);
