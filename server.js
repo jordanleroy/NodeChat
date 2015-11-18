@@ -1,7 +1,7 @@
 var net = require('net');
 var os  = require('os');
 var Gpio = require('onoff').Gpio; // Constructor function for Gpio objects.
-
+var led;
 
 var clients_array = [];
 
@@ -36,21 +36,24 @@ net.createServer(function(socket) {
                 break;
         }
 
-        var led = new Gpio(25, 'out'),      // Export GPIO #25 as an output.
-        iv;
+        if (!led) {
+            led = new Gpio(25, 'out');      // Export GPIO #25 as an output.
+            var iv;
 
-        // Toggle the state of the LED on GPIO #25 every 200ms.
-        // Here synchronous methods are used. Asynchronous methods are also available.
-        iv = setInterval(function() {
-            led.writeSync(led.readSync() ^ 1); // 1 = on, 0 = off :)
-        }, 50);
+            // Toggle the state of the LED on GPIO #25 every 200ms.
+            // Here synchronous methods are used. Asynchronous methods are also available.
+            iv = setInterval(function() {
+                led.writeSync(led.readSync() ^ 1); // 1 = on, 0 = off :)
+            }, 30);
 
-        // Stop blinking the LED and turn it off after 5 seconds.
-        setTimeout(function() {
-            clearInterval(iv); // Stop blinking
-            led.writeSync(0); // Turn LED off.
-            led.unexport(); // Unexport GPIO and free resources
-        }, 200);
+            // Stop blinking the LED and turn it off after 120 ms.
+            setTimeout(function() {
+                clearInterval(iv); // Stop blinking
+                led.writeSync(0); // Turn LED off.
+                led.unexport(); // Unexport GPIO and free resources
+                led = null;
+            }, 120);
+        }
     });
 
     socket.on('error', console.error);
