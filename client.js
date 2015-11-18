@@ -62,6 +62,8 @@ client.on('data', function(data) {
             console.error(json_data.cause);
             if (json_data.howTo)
                 console.error(json_data.howTo);
+            if (json_data.fatal)
+                disconnect();
             break;
     }
 });

@@ -87,6 +87,17 @@ function connectClient(socket, json_data) {
     socket.name   = json_data.name;
     socket.groups = ['general'];
 
+    clients_array.forEach(function(client) {
+        if (socket.name === client.name) {
+            socket.write(JSON.stringify({
+                type  : 'error',
+                fatal : true,
+                cause : 'The name you chose already exists',
+                howTo : 'please use another name'
+            }));
+        }
+    });
+
 
     socket.write(JSON.stringify({
         type : 'connectionConfirmation',
