@@ -40,8 +40,7 @@ net.createServer(function(socket) {
             led = new Gpio(25, 'out');      // Export GPIO #25 as an output.
             var iv;
 
-            // Toggle the state of the LED on GPIO #25 every 200ms.
-            // Here synchronous methods are used. Asynchronous methods are also available.
+            // Toggle the state of the LED on GPIO #25 every 30ms.
             iv = setInterval(function() {
                 led.writeSync(led.readSync() ^ 1); // 1 = on, 0 = off :)
             }, 30);

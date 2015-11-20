@@ -1,5 +1,5 @@
 /*
-/ node client.js --name David --ip 127.0.0.1 --port 8080
+/ node client.js --name USER_NAME --ip SERVER_IP --port SERVER_PORT
 */
 var net  = require('net');
 var argv = require('minimist')(process.argv.slice(2));
